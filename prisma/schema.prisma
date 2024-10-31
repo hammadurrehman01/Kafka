@@ -1,0 +1,229 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["views", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum USER_TYPES {
+  COACH // INSTRUCTOR
+  INDIVIDUAL // INDIVIDUAL BUSINESS
+  BUSINESS // GYM OWNER
+  CUSTOMER // TRAINEE
+}
+
+enum FREQUENCY {
+  ONCE
+  REPEAT
+}
+
+enum DAYS {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum NOTIFICATIONS_TYPES {
+  CLASSES
+  REPORTS
+  CAMPAIGNS
+  PROMOTIONS
+}
+
+enum ENROLLMENT_STATUS {
+  PENDING
+  ACCEPTED
+  CANCELLED
+}
+
+enum ONBOARDING_STATUS {
+  STARTED
+  BUSINESS_INFO
+  BUSINESS_IMAGES
+  BUSINESS_DOCUMENTS
+  COMPLETED
+}
+
+enum CategoriesType {
+  BUSINESS
+  INDIVIDUAL
+}
+
+model Categories {
+  id         String         @id @default(cuid())
+  name       String
+  image      String?
+  type       CategoriesType
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt()
+  gyms       Gyms[]
+  classes    Classes[]
+
+  @@index([id], type: Hash)
+  @@index([name], type: Hash)
+}
+
+model Users {
+  id            String            @id @default(cuid())
+  email         String
+  type          USER_TYPES
+  name          String?
+  summary       String?
+  image         String?
+  device_id     String?
+  onboarding    ONBOARDING_STATUS @default(STARTED)
+  created_at    DateTime          @default(now())
+  updated_at    DateTime          @updatedAt
+  gyms          Gyms[]
+  ratings       Reviews[]
+  checkins      CheckIns[]
+  favorites     Favorites[]
+  gym_coaches   GymCoaches[]
+  enrollments   Enrollments[]
+  reward_points RewardPoints[]
+  notifications Notifications[]
+
+  @@index([id], type: Hash)
+}
+
+model Gyms {
+  id          String   @id @default(cuid())
+  category_id String
+  images      String[] @default([])
+  owner_id    String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt()
+
+  classes     Classes[]
+  gym_coaches GymCoaches[]
+  documents   GymDocuments[]
+  user        Users          @relation(fields: [owner_id], references: [id])
+  category    Categories?    @relation(fields: [category_id], references: [id])
+}
+
+model GymDocuments {
+  id         String   @id @default(cuid())
+  type       String
+  document   String
+  gym_id     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt()
+
+  gym Gyms @relation(fields: [gym_id], references: [id])
+}
+
+model GymCoaches {
+  id         String   @id @default(cuid())
+  user_id    String
+  gym_id     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt()
+
+  classes Classes[]
+  gym     Gyms      @relation(fields: [gym_id], references: [id])
+  user    Users     @relation(fields: [user_id], references: [id])
+}
+
+model Classes {
+  id             String        @id @default(cuid())
+  title          String
+  description    String?
+  category_id    String
+  original_price Float
+  discount_price Float?
+  max_capacity   Int
+  frequency      FREQUENCY
+  days           String[]      @default([])
+  image          String[]      @default([])
+  schedule       DateTime?
+  start_time     Int?
+  end_time       Int?
+  start_date     DateTime?
+  end_date       DateTime?
+  address        Json
+  latitude       Float
+  longitude      Float
+  gym_id         String
+  coach_id       String
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt()
+  gym            Gyms          @relation(fields: [gym_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  gym_coach      GymCoaches    @relation(fields: [coach_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  category       Categories    @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reviews        Reviews[]
+  favorites      Favorites[]
+  enrollments    Enrollments[]
+}
+
+model Reviews {
+  id         String   @id @default(cuid())
+  summary    String?
+  stars      Int      @default(0)
+  class_id   String
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt()
+  user       Users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  class      Classes  @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model RewardPoints {
+  id         String   @id @default(cuid())
+  points     Int
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt()
+  user       Users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Favorites {
+  id         String   @id @default(cuid())
+  user_id    String
+  class_id   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt()
+  user       Users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  class      Classes  @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Notifications {
+  id         String              @id @default(cuid())
+  type       NOTIFICATIONS_TYPES
+  read       Boolean             @default(false)
+  data       Json?
+  user_id    String
+  created_at DateTime            @default(now())
+  updated_at DateTime            @updatedAt()
+  user       Users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Enrollments {
+  id             String            @id @default(cuid())
+  class_id       String
+  user_id        String
+  status         ENROLLMENT_STATUS
+  terms_accepted Boolean           @default(false)
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt()
+  checkins       CheckIns[]
+  class          Classes           @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user           Users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model CheckIns {
+  id            String      @id @default(cuid())
+  time          Int
+  enrollment_id String
+  user_id       String
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt()
+  user          Users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  enrollment    Enrollments @relation(fields: [enrollment_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}

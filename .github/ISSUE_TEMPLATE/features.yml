@@ -1,0 +1,29 @@
+name: Features
+description: New feature to be implemented
+title: ':label: '
+labels: ['feature']
+assignees: []
+projects: ['Techlabs-do/44']
+
+body:
+  - type: markdown
+    attributes:
+      value: 'Thank you for taking the time to suggest a new feature. Please fill out the following form as completely as possible.'
+
+  - type: textarea
+    id: what-is-the-feature
+    attributes:
+      label: What is the feature
+      description: Explain what is the feature.
+      placeholder: Describe the feature you'd like to see implemented.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What is the acceptance criteria?
+      placeholder: Specify the conditions that must be fulfilled for the feature to be accepted.
+    validations:
+      required: true

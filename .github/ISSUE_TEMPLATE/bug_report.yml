@@ -1,0 +1,38 @@
+name: Bug report
+description: Create a report to help us improve
+title: ':lady_beetle: '
+labels: ['bug']
+assignees: []
+projects: ['Techlabs-do/44']
+
+body:
+  - type: markdown
+    attributes:
+      value: 'Thank you for taking the time to report a bug. Please fill out the following form as completely as possible.'
+
+  - type: textarea
+    id: describe-bug
+    attributes:
+      label: Describe the bug
+      description: What is the bug?
+      placeholder: Describe what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: to-reproduce
+    attributes:
+      label: To Reproduce
+      description: Explain how you got the error
+      placeholder: Steps to reproduce the error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behaviour
+    attributes:
+      label: Expected behaviour
+      description: What was the expected behaviour?
+      placeholder: Describe what you expected to happen.
+    validations:
+      required: true
